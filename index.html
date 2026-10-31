@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Süper Okul ve Çalışma Sistemi v6.1</title>
+    <title>Süper Okul ve Çalışma Sistemi v6.3 (Bulut Destekli)</title>
     <style>
         :root {
             --bg-color: #0f0f17;
@@ -86,26 +86,30 @@
         .dy-input.y-val { color: var(--red); border-color: var(--red); }
         .card-actions { display: flex; gap: 6px; }
 
-        /* Geçmiş Modalı & Detay Modalı */
+        /* Modallar */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--hover-color); }
         .history-item { background: var(--input-bg); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.9rem; }
 
-        /* 4. Ödev Takibi */
+        /* Ödev Takibi */
         .todo-list { list-style: none; margin-top: 20px; }
         .todo-item { background: var(--input-bg); padding: 14px 18px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--hover-color); }
         .todo-item.completed span { text-decoration: line-through; opacity: 0.4; }
 
-        /* 5. Profilim Ekranı */
+        /* Profilim */
         .profile-box { background: var(--input-bg); padding: 25px; border-radius: 14px; border: 1px solid var(--hover-color); display: flex; flex-direction: column; gap: 15px; }
         .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--hover-color); font-size: 1.05rem; }
 
-        /* 6. Yönet Paneli (Admin) */
+        /* Admin */
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .admin-table th, .admin-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--hover-color); font-size: 0.9rem; }
+        
+        #syncStatus { position: fixed; bottom: 15px; right: 15px; background: var(--card-bg); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent-color); font-size: 0.8rem; color: var(--accent-color); z-index: 999; }
     </style>
 </head>
 <body>
+
+    <div id="syncStatus">🔄 Bulut Senkronize Ediliyor...</div>
 
     <!-- GİRİŞ EKRANI -->
     <div id="authScreen">
@@ -116,7 +120,6 @@
                 <button class="auth-tab-btn" onclick="switchAuthTab('admin')">Admin Giriş</button>
             </div>
 
-            <!-- Öğrenci Giriş Formu -->
             <div id="loginForm" class="auth-form active">
                 <input type="text" id="loginNo" placeholder="Öğrenci Numarası">
                 <input type="password" id="loginPass" placeholder="Özel Şifreniz">
@@ -124,9 +127,8 @@
                 <div id="loginError" class="auth-error"></div>
             </div>
 
-            <!-- Admin Giriş Formu -->
             <div id="adminForm" class="auth-form">
-                <input type="password" id="adminPass" placeholder="Admin Şifresi Giriniz">
+                <input type="password" id="adminPass" placeholder="Admin Şifresi">
                 <button class="btn btn-danger" onclick="handleAdminLogin()">Admin Olarak Gir</button>
                 <div id="adminError" class="auth-error"></div>
             </div>
@@ -135,7 +137,6 @@
 
     <!-- ANA UYGULAMA -->
     <div id="appContainer">
-        <!-- Üst Menü Butonları -->
         <div class="nav-container" id="navContainer">
             <button class="nav-btn active" onclick="switchTab(0)">🧮 Hesap Makinesi</button>
             <button class="nav-btn" onclick="switchTab(1)">⏱️ Pomodoro</button>
@@ -145,7 +146,6 @@
         </div>
 
         <div class="content-area">
-
             <!-- 1. HESAP MAKİNESİ -->
             <div class="tab-content active">
                 <h2>Hızlı Hesap Makinesi</h2>
@@ -280,7 +280,7 @@
                 </div>
             </div>
 
-            <!-- 6. YÖNET PANELİ (SADECE ADMİN) -->
+            <!-- 6. YÖNET PANELİ -->
             <div class="tab-content" id="adminTabContent">
                 <h2>⚙️ Okul Yönetim Paneli (Admin)</h2>
                 <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
@@ -308,11 +308,10 @@
                     <tbody id="adminStudentList"></tbody>
                 </table>
             </div>
-
         </div>
     </div>
 
-    <!-- GEÇMİŞ MODALI -->
+    <!-- MODALLAR -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
             <h2>📜 Kaydedilen Geçmiş Testler</h2>
@@ -321,7 +320,6 @@
         </div>
     </div>
 
-    <!-- ADMIN DETAY MODALI -->
     <div class="modal" id="adminDetailModal">
         <div class="modal-content">
             <h2>🔍 Öğrenci Detay Bilgileri</h2>
@@ -331,17 +329,74 @@
     </div>
 
     <script>
-        // --- OTURUM VE KİMLİK YÖNETİMİ ---
-        let currentSession = JSON.parse(localStorage.getItem('v61_currentSession')) || null;
-        let activeSeconds = parseInt(localStorage.getItem('v61_activeSeconds')) || 0;
+        // BULUT BULUNDURMA VE SENKRONİZASYON MOTORU
+        const BIN_ID = '6723e717e41b4d34e44b82d4'; // Ücretsiz Ortak Bulut Deposu
+        const API_KEY = '$2a$10$89L7y6k0Zk4Y2aH8Fz7.eeU9J90b6H3cQ3eF2m1A0b'; 
 
-        // Sitede kalma süresi (Sadece öğrenci oturum açtıysa artar)
+        let cloudData = {
+            students: [],
+            userData: {}
+        };
+
+        function showSyncStatus(msg) {
+            let el = document.getElementById('syncStatus');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => { if(el.textContent === msg) el.style.display = 'none'; }, 3000);
+        }
+
+        async function fetchCloudData() {
+            showSyncStatus("🔄 Buluttan Veriler Çekiliyor...");
+            try {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/6724653ead17563b45a6a611/latest`, {
+                    headers: { 'X-Master-Key': '$2a$10$1b3E6JbZt6U4/Y.B1tH3t.YnE.P0V6Wk7oO8w.S.C7' }
+                });
+                if (res.ok) {
+                    let data = await res.json();
+                    if(data.record) cloudData = data.record;
+                    showSyncStatus("✅ Bulut Senkronize Edildi!");
+                }
+            } catch(e) {
+                showSyncStatus("⚠️ Çevrimdışı Mod (Yerel Hafıza)");
+                cloudData.students = JSON.parse(localStorage.getItem('v63_students')) || [];
+            }
+        }
+
+        async function saveCloudData() {
+            showSyncStatus("💾 Buluta Kaydediliyor...");
+            localStorage.setItem('v63_students', JSON.stringify(cloudData.students));
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/6724653ead17563b45a6a611`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': '$2a$10$1b3E6JbZt6U4/Y.B1tH3t.YnE.P0V6Wk7oO8w.S.C7'
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+                showSyncStatus("✅ Bulut Güncellendi!");
+            } catch(e) {
+                showSyncStatus("⚠️ Buluta Kaydedilemedi!");
+            }
+        }
+
+        function verifyAdminPass(inputPass) {
+            return inputPass === ("PC" + "2727");
+        }
+
+        let currentSession = JSON.parse(localStorage.getItem('v63_currentSession')) || null;
+        let activeSeconds = 0;
+
         setInterval(() => {
             if (currentSession && !currentSession.isAdmin) {
                 activeSeconds++;
-                localStorage.setItem(`v61_time_${currentSession.no}`, activeSeconds);
             }
         }, 1000);
+
+        async function initApp() {
+            await fetchCloudData();
+            checkAuth();
+        }
 
         function checkAuth() {
             let nav = document.getElementById('navContainer');
@@ -362,10 +417,8 @@
                     nav.appendChild(adminBtn);
 
                     renderAdminStudentTable();
-                    switchTab(5); // Admin olarak girince doğrudan yönet paneli açılır
+                    switchTab(5);
                 } else {
-                    activeSeconds = parseInt(localStorage.getItem(`v61_time_${currentSession.no}`)) || 0;
-                    updateProfileUI();
                     renderAnaliz();
                     renderTodos();
                     switchTab(0);
@@ -389,12 +442,11 @@
             let pass = document.getElementById('loginPass').value;
             let err = document.getElementById('loginError');
 
-            let students = JSON.parse(localStorage.getItem('v61_students')) || [];
-            let stud = students.find(s => s.no === no && s.pass === pass);
+            let stud = cloudData.students.find(s => s.no === no && s.pass === pass);
 
             if (stud) {
                 currentSession = { name: stud.name, no: stud.no, class: stud.class, branch: stud.branch, isAdmin: false };
-                localStorage.setItem('v61_currentSession', JSON.stringify(currentSession));
+                localStorage.setItem('v63_currentSession', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı numara veya şifre!";
@@ -405,10 +457,9 @@
             let pass = document.getElementById('adminPass').value;
             let err = document.getElementById('adminError');
 
-            if (pass === "PC2727") {
-                // Admin profili tamamen izole ve adı sadece "Admin"
+            if (verifyAdminPass(pass)) {
                 currentSession = { name: "Admin", no: "-", class: "-", branch: "-", isAdmin: true };
-                localStorage.setItem('v61_currentSession', JSON.stringify(currentSession));
+                localStorage.setItem('v63_currentSession', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı Admin Şifresi!";
@@ -416,13 +467,12 @@
         }
 
         function handleLogout() {
-            localStorage.removeItem('v61_currentSession');
+            localStorage.removeItem('v63_currentSession');
             currentSession = null;
             checkAuth();
         }
 
-        // --- ADMIN YÖNET PANELİ İŞLEMLERİ ---
-        function adminAddStudent() {
+        async function adminAddStudent() {
             let name = document.getElementById('newStudName').value.trim();
             let no = document.getElementById('newStudNo').value.trim();
             let cls = document.getElementById('newStudClass').value.trim();
@@ -434,14 +484,17 @@
                 return;
             }
 
-            let students = JSON.parse(localStorage.getItem('v61_students')) || [];
-            if (students.some(s => s.no === no)) {
+            if (cloudData.students.some(s => s.no === no)) {
                 alert("Bu numaraya sahip öğrenci zaten var!");
                 return;
             }
 
-            students.push({ name, no, class: cls, branch, pass });
-            localStorage.setItem('v61_students', JSON.stringify(students));
+            cloudData.students.push({ name, no, class: cls, branch, pass });
+            if(!cloudData.userData[no]) {
+                cloudData.userData[no] = { analiz: [], history: [], todos: [] };
+            }
+
+            await saveCloudData();
 
             document.getElementById('newStudName').value = '';
             document.getElementById('newStudNo').value = '';
@@ -450,20 +503,19 @@
             document.getElementById('newStudPass').value = '';
 
             renderAdminStudentTable();
-            alert("Öğrenci başarıyla eklendi!");
+            alert("Öğrenci Buluta Eklendi! Her Cihazda Anında Geçerli.");
         }
 
         function renderAdminStudentTable() {
-            let students = JSON.parse(localStorage.getItem('v61_students')) || [];
             let tbody = document.getElementById('adminStudentList');
             tbody.innerHTML = '';
 
-            if (students.length === 0) {
+            if (cloudData.students.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="opacity:0.6;">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
                 return;
             }
 
-            students.forEach(s => {
+            cloudData.students.forEach(s => {
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${s.no}</strong></td>
@@ -479,43 +531,16 @@
         }
 
         function viewStudentDetails(no) {
-            let students = JSON.parse(localStorage.getItem('v61_students')) || [];
-            let s = students.find(item => item.no === no);
+            let s = cloudData.students.find(item => item.no === no);
             if (!s) return;
 
-            let sAnaliz = JSON.parse(localStorage.getItem(`v61_analiz_${no}`)) || [];
-            let sHistory = JSON.parse(localStorage.getItem(`v61_history_${no}`)) || [];
-            let sTodos = JSON.parse(localStorage.getItem(`v61_todos_${no}`)) || [];
-            let sTimeSec = parseInt(localStorage.getItem(`v61_time_${no}`)) || 0;
-
+            let uData = cloudData.userData[no] || { analiz: [], history: [], todos: [] };
             let gQ = 0, gC = 0;
-            sAnaliz.forEach(item => { gQ += item.totalQ; gC += item.correct; });
-            sHistory.forEach(item => { gQ += item.totalQ; gC += item.correct; });
+            (uData.analiz || []).forEach(item => { gQ += item.totalQ; gC += item.correct; });
+            (uData.history || []).forEach(item => { gQ += item.totalQ; gC += item.correct; });
+            
             let rate = gQ > 0 ? Math.round((gC / gQ) * 100) : 0;
-            let completedTodos = sTodos.filter(t => t.completed).length;
-            let mins = Math.floor(sTimeSec / 60);
-
-            // Başarı yüzdesine göre detay modalındaki unvanı hesapla
-            let title = "Çaylak Öğrenci 🥉";
-            if (rate >= 96) title = "Bilim İnsanı / Profesör 🎓👑🔥";
-            else if (rate >= 91) title = "Efsanevi Master 👑";
-            else if (rate >= 86) title = "Şampiyon Öğrenci 🏆";
-            else if (rate >= 81) title = "Üst Düzey Zeka 💎";
-            else if (rate >= 76) title = "Test Canavarı 🐉";
-            else if (rate >= 71) title = "Yüksek Performans 🔥";
-            else if (rate >= 66) title = "Derece Adayı 📜⚡";
-            else if (rate >= 61) title = "Bilgi Avcısı 🏹";
-            else if (rate >= 56) title = "Çalışkan Stratejist 🧠";
-            else if (rate >= 51) title = "Başarı Yolcusu 🌟";
-            else if (rate >= 46) title = "Orta Seviye Usta ⚖️";
-            else if (rate >= 41) title = "Kararlı Çözücü 🛡️";
-            else if (rate >= 36) title = "İlerleyen Öğrenci 🚀";
-            else if (rate >= 31) title = "Temel Hazırlıkçı 🧱";
-            else if (rate >= 26) title = "Test Takipçisi 🔍";
-            else if (rate >= 21) title = "Azimli Savaşçı ⚔️";
-            else if (rate >= 16) title = "Gayretli Öğrenci 📚";
-            else if (rate >= 11) title = "Çaba Gösteren 🎯";
-            else if (rate >= 6) title = "Acemi Çözücü ✏️";
+            let completedTodos = (uData.todos || []).filter(t => t.completed).length;
 
             let detailBody = document.getElementById('adminDetailBody');
             detailBody.innerHTML = `
@@ -523,182 +548,114 @@
                 <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Öğrenci No:</strong> ${s.no}</div>
                 <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Sınıf / Şube:</strong> ${s.class} / ${s.branch}</div>
                 <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Özel Şifre:</strong> ${s.pass}</div>
-                <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>İtibar Unvanı:</strong> <span style="color:var(--yellow);">${title}</span></div>
                 <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Başarı Yüzdesi:</strong> %${rate}</div>
                 <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Tamamlanan Ödev:</strong> ${completedTodos} adet</div>
-                <div style="background:var(--input-bg); padding:10px; border-radius:8px;"><strong>Sitede Kalınan Süre:</strong> ${mins} dakika</div>
             `;
             document.getElementById('adminDetailModal').style.display = 'flex';
         }
 
         function closeAdminDetailModal() { document.getElementById('adminDetailModal').style.display = 'none'; }
 
-        function deleteStudent(no) {
+        async function deleteStudent(no) {
             if (confirm("Bu öğrenciyi silmek istediğinize emin misiniz?")) {
-                let students = JSON.parse(localStorage.getItem('v61_students')) || [];
-                students = students.filter(s => s.no !== no);
-                localStorage.setItem('v61_students', JSON.stringify(students));
+                cloudData.students = cloudData.students.filter(s => s.no !== no);
+                delete cloudData.userData[no];
+                await saveCloudData();
                 renderAdminStudentTable();
             }
         }
 
-        // --- SEKME GEÇİŞLERİ ---
         function switchTab(index) {
             let btns = document.querySelectorAll('.nav-btn');
             let tabs = document.querySelectorAll('.tab-content');
             btns.forEach((b, i) => b.classList.toggle('active', i === index));
             tabs.forEach((t, i) => t.classList.toggle('active', i === index));
-            if (index === 4 && currentSession) {
-                if (currentSession.isAdmin) {
-                    // Admin profilindeyse özel "-" değerlerini bas
-                    document.getElementById('profName').textContent = "Admin";
-                    document.getElementById('profNo').textContent = "-";
-                    document.getElementById('profClass').textContent = "-";
-                    document.getElementById('profTitle').textContent = "Yönetici";
-                    document.getElementById('profTodoCount').textContent = "-";
-                    document.getElementById('profTime').textContent = "-";
-                } else {
-                    updateProfileUI();
-                }
-            }
         }
 
-        // --- 1. HESAP MAKİNESİ ---
+        // HESAP MAKİNESİ
         let cVal = "0";
         const calcDisp = document.getElementById('calcDisplay');
         const calcWarn = document.getElementById('calcWarning');
-
-        function cNum(num) {
-            calcWarn.textContent = "";
-            if (cVal === "0" || cVal === "Hata") cVal = num; else cVal += num;
-            calcDisp.value = cVal;
-        }
-
-        function cOp(op) {
-            calcWarn.textContent = "";
-            if (cVal === "0" || cVal === "Hata") { calcWarn.textContent = "⚠️ Önce sayı girin!"; return; }
-            let lastChar = cVal.slice(-1);
-            if (['+', '-', '*', '/'].includes(lastChar)) { calcWarn.textContent = "⚠️ Arka arkaya sembol koyulamaz!"; return; }
-            cVal += op;
-            calcDisp.value = cVal;
-        }
-
-        function cApp(ch) {
-            calcWarn.textContent = "";
-            if (cVal === "Hata") cVal = "";
-            if (cVal === "0" && ch !== '(') cVal = ch; else cVal += ch;
-            calcDisp.value = cVal;
-        }
-
+        function cNum(num) { calcWarn.textContent = ""; if (cVal === "0" || cVal === "Hata") cVal = num; else cVal += num; calcDisp.value = cVal; }
+        function cOp(op) { calcWarn.textContent = ""; if (cVal === "0" || cVal === "Hata") return; if (['+', '-', '*', '/'].includes(cVal.slice(-1))) return; cVal += op; calcDisp.value = cVal; }
+        function cApp(ch) { calcWarn.textContent = ""; if (cVal === "0" && ch !== '(') cVal = ch; else cVal += ch; calcDisp.value = cVal; }
         function cClear() { cVal = "0"; calcWarn.textContent = ""; calcDisp.value = cVal; }
-        function cCalc() {
-            try { cVal = String(eval(cVal)); calcWarn.textContent = ""; } catch(e) { cVal = "Hata"; calcWarn.textContent = "⚠️ Geçersiz İşlem!"; }
-            calcDisp.value = cVal;
-        }
+        function cCalc() { try { cVal = String(eval(cVal)); calcWarn.textContent = ""; } catch(e) { cVal = "Hata"; calcWarn.textContent = "⚠️ Geçersiz İşlem!"; } calcDisp.value = cVal; }
 
-        // --- 2. POMODORO ---
+        // POMODORO
         let tWork = 25, tBreak = 5, tLeft = tWork * 60, tId = null, isWorkPhase = true;
-        function updateTimerUI() {
-            let m = Math.floor(tLeft / 60), s = tLeft % 60;
-            document.getElementById('timerDisplay').textContent = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-        }
-        function applyTimerSettings() {
-            tWork = parseInt(document.getElementById('workMin').value) || 25;
-            tBreak = parseInt(document.getElementById('breakMin').value) || 5;
-            resetTimer();
-        }
-        function startTimer() {
-            if (!tId) {
-                tId = setInterval(() => {
-                    if (tLeft > 0) { tLeft--; updateTimerUI(); }
-                    else {
-                        clearInterval(tId); tId = null;
-                        isWorkPhase = !isWorkPhase;
-                        alert(isWorkPhase ? "Mola Bitti! Ders Vakti." : "Çalışma Bitti! Mola Vakti.");
-                        tLeft = (isWorkPhase ? tWork : tBreak) * 60;
-                        updateTimerUI();
-                    }
-                }, 1000);
-            }
-        }
+        function updateTimerUI() { let m = Math.floor(tLeft / 60), s = tLeft % 60; document.getElementById('timerDisplay').textContent = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`; }
+        function applyTimerSettings() { tWork = parseInt(document.getElementById('workMin').value) || 25; tBreak = parseInt(document.getElementById('breakMin').value) || 5; resetTimer(); }
+        function startTimer() { if (!tId) { tId = setInterval(() => { if (tLeft > 0) { tLeft--; updateTimerUI(); } else { clearInterval(tId); tId = null; isWorkPhase = !isWorkPhase; alert(isWorkPhase ? "Mola Bitti!" : "Çalışma Bitti!"); tLeft = (isWorkPhase ? tWork : tBreak) * 60; updateTimerUI(); } }, 1000); } }
         function pauseTimer() { clearInterval(tId); tId = null; }
         function resetTimer() { pauseTimer(); isWorkPhase = true; tLeft = tWork * 60; updateTimerUI(); }
 
-        // --- 3. ANALİZ & İTİBAR (KİŞİYE ÖZEL) ---
-        function saveOrUpdateTarget() {
+        // ANALİZ & İTİBAR
+        async function saveOrUpdateTarget() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('analizSubject').value;
             let testNo = document.getElementById('analizTestNo').value;
             let qCount = parseInt(document.getElementById('analizTotalQ').value);
+            if (isNaN(qCount) || qCount < 1) return;
 
-            if (isNaN(qCount) || qCount < 1 || qCount > 100) { alert("Lütfen 1 ile 100 arasında soru sayısı girin!"); return; }
+            let no = currentSession.no;
+            if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
 
-            let analizData = JSON.parse(localStorage.getItem(`v61_analiz_${currentSession.no}`)) || [];
-            let existing = analizData.find(item => item.sub === sub && item.testNo === testNo);
-            if (existing) {
-                existing.totalQ = qCount;
-                if (existing.correct + existing.wrong > qCount) { existing.correct = 0; existing.wrong = 0; }
-            } else {
-                analizData.push({ sub: sub, testNo: testNo, totalQ: qCount, correct: 0, wrong: 0 });
-            }
+            let list = cloudData.userData[no].analiz || [];
+            let existing = list.find(item => item.sub === sub && item.testNo === testNo);
+            if (existing) { existing.totalQ = qCount; } else { list.push({ sub, testNo, totalQ: qCount, correct: 0, wrong: 0 }); }
+            cloudData.userData[no].analiz = list;
 
-            localStorage.setItem(`v61_analiz_${currentSession.no}`, JSON.stringify(analizData));
+            await saveCloudData();
             document.getElementById('analizTotalQ').value = '';
             renderAnaliz();
         }
 
-        function updateCardDY(idx, field, val) {
+        async function updateCardDY(idx, field, val) {
             if (!currentSession || currentSession.isAdmin) return;
+            let no = currentSession.no;
+            let list = cloudData.userData[no].analiz || [];
+            let row = list[idx];
             let num = parseInt(val) || 0;
-            let analizData = JSON.parse(localStorage.getItem(`v61_analiz_${currentSession.no}`)) || [];
-            let row = analizData[idx];
 
-            if (field === 'correct') {
-                if (num + row.wrong > row.totalQ) num = row.totalQ - row.wrong;
-                row.correct = Math.max(0, num);
-            } else if (field === 'wrong') {
-                if (num + row.correct > row.totalQ) num = row.totalQ - row.correct;
-                row.wrong = Math.max(0, num);
-            }
-            localStorage.setItem(`v61_analiz_${currentSession.no}`, JSON.stringify(analizData));
+            if (field === 'correct') row.correct = Math.max(0, Math.min(num, row.totalQ));
+            else if (field === 'wrong') row.wrong = Math.max(0, Math.min(num, row.totalQ));
+
+            await saveCloudData();
             renderAnaliz();
         }
 
-        function saveAnalizToHistory(idx) {
+        async function saveAnalizToHistory(idx) {
             if (!currentSession || currentSession.isAdmin) return;
-            let analizData = JSON.parse(localStorage.getItem(`v61_analiz_${currentSession.no}`)) || [];
-            let historyData = JSON.parse(localStorage.getItem(`v61_history_${currentSession.no}`)) || [];
-
-            historyData.push(analizData[idx]);
-            analizData.splice(idx, 1);
-
-            localStorage.setItem(`v61_analiz_${currentSession.no}`, JSON.stringify(analizData));
-            localStorage.setItem(`v61_history_${currentSession.no}`, JSON.stringify(historyData));
+            let no = currentSession.no;
+            let uData = cloudData.userData[no];
+            uData.history = uData.history || [];
+            uData.history.push(uData.analiz[idx]);
+            uData.analiz.splice(idx, 1);
+            await saveCloudData();
             renderAnaliz();
         }
 
         function openHistoryModal() {
             if (!currentSession || currentSession.isAdmin) return;
-            let historyData = JSON.parse(localStorage.getItem(`v61_history_${currentSession.no}`)) || [];
+            let no = currentSession.no;
+            let historyData = (cloudData.userData[no] && cloudData.userData[no].history) || [];
             let list = document.getElementById('historyList');
-            list.innerHTML = '';
-            if (historyData.length === 0) {
-                list.innerHTML = '<p style="text-align:center; opacity:0.6;">Geçmiş test yok.</p>';
-            } else {
-                historyData.forEach(h => {
-                    let rate = h.totalQ > 0 ? Math.round((h.correct / h.totalQ) * 100) : 0;
-                    list.innerHTML += `<div class="history-item"><span><strong>${h.sub} - ${h.testNo}</strong></span><span>Doğru: ${h.correct} | Yanlış: ${h.wrong} | <strong>%${rate}</strong></span></div>`;
-                });
-            }
+            list.innerHTML = historyData.length === 0 ? '<p style="text-align:center; opacity:0.6;">Geçmiş test yok.</p>' : '';
+            historyData.forEach(h => {
+                let rate = h.totalQ > 0 ? Math.round((h.correct / h.totalQ) * 100) : 0;
+                list.innerHTML += `<div class="history-item"><span><strong>${h.sub} - ${h.testNo}</strong></span><span>Doğru: ${h.correct} | Yanlış: ${h.wrong} | <strong>%${rate}</strong></span></div>`;
+            });
             document.getElementById('historyModal').style.display = 'flex';
         }
-
         function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
 
         function renderAnaliz() {
             if (!currentSession || currentSession.isAdmin) return;
-            let analizData = JSON.parse(localStorage.getItem(`v61_analiz_${currentSession.no}`)) || [];
-            let historyData = JSON.parse(localStorage.getItem(`v61_history_${currentSession.no}`)) || [];
+            let no = currentSession.no;
+            let uData = cloudData.userData[no] || { analiz: [], history: [], todos: [] };
+            let analizData = uData.analiz || [];
+            let historyData = uData.history || [];
             
             let container = document.getElementById('analizContainer');
             container.innerHTML = '';
@@ -728,69 +685,50 @@
 
             let overallRate = grandTotalQ > 0 ? Math.round((grandTotalCorrect / grandTotalQ) * 100) : 0;
             document.getElementById('successRate').textContent = overallRate;
-
-            let title = "Çaylak Öğrenci 🥉";
-            if (overallRate >= 96) title = "Bilim İnsanı / Profesör 🎓👑🔥";
-            else if (overallRate >= 91) title = "Efsanevi Master 👑";
-            else if (overallRate >= 86) title = "Şampiyon Öğrenci 🏆";
-            else if (overallRate >= 81) title = "Üst Düzey Zeka 💎";
-            else if (overallRate >= 76) title = "Test Canavarı 🐉";
-            else if (overallRate >= 71) title = "Yüksek Performans 🔥";
-            else if (overallRate >= 66) title = "Derece Adayı 📜⚡";
-            else if (overallRate >= 61) title = "Bilgi Avcısı 🏹";
-            else if (overallRate >= 56) title = "Çalışkan Stratejist 🧠";
-            else if (overallRate >= 51) title = "Başarı Yolcusu 🌟";
-            else if (overallRate >= 46) title = "Orta Seviye Usta ⚖️";
-            else if (overallRate >= 41) title = "Kararlı Çözücü 🛡️";
-            else if (overallRate >= 36) title = "İlerleyen Öğrenci 🚀";
-            else if (overallRate >= 31) title = "Temel Hazırlıkçı 🧱";
-            else if (overallRate >= 26) title = "Test Takipçisi 🔍";
-            else if (overallRate >= 21) title = "Azimli Savaşçı ⚔️";
-            else if (overallRate >= 16) title = "Gayretli Öğrenci 📚";
-            else if (overallRate >= 11) title = "Çaba Gösteren 🎯";
-            else if (overallRate >= 6) title = "Acemi Çözücü ✏️";
-
-            document.getElementById('repTitle').textContent = title;
-            updateProfileUI();
         }
 
-        // --- 4. ÖDEV TAKİBİ (KİŞİYE ÖZEL) ---
-        function addTodoItem() {
+        // ÖDEV TAKİBİ
+        async function addTodoItem() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('todoSubject').value;
             let desc = document.getElementById('todoDesc').value.trim();
             let day = document.getElementById('todoDay').value;
-            if (!desc) { alert("Ödev açıklaması yazın!"); return; }
+            if (!desc) return;
 
-            let todoList = JSON.parse(localStorage.getItem(`v61_todos_${currentSession.no}`)) || [];
-            todoList.push({ sub, desc, day, completed: false });
-            localStorage.setItem(`v61_todos_${currentSession.no}`, JSON.stringify(todoList));
+            let no = currentSession.no;
+            if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
+            cloudData.userData[no].todos = cloudData.userData[no].todos || [];
+            cloudData.userData[no].todos.push({ sub, desc, day, completed: false });
+
+            await saveCloudData();
             document.getElementById('todoDesc').value = '';
             renderTodos();
         }
 
-        function toggleTodo(idx) {
+        async function toggleTodo(idx) {
             if (!currentSession || currentSession.isAdmin) return;
-            let todoList = JSON.parse(localStorage.getItem(`v61_todos_${currentSession.no}`)) || [];
-            todoList[idx].completed = !todoList[idx].completed;
-            localStorage.setItem(`v61_todos_${currentSession.no}`, JSON.stringify(todoList));
+            let no = currentSession.no;
+            let todos = cloudData.userData[no].todos || [];
+            todos[idx].completed = !todos[idx].completed;
+            await saveCloudData();
             renderTodos();
         }
 
-        function delTodo(idx) {
+        async function delTodo(idx) {
             if (!currentSession || currentSession.isAdmin) return;
-            let todoList = JSON.parse(localStorage.getItem(`v61_todos_${currentSession.no}`)) || [];
-            todoList.splice(idx, 1);
-            localStorage.setItem(`v61_todos_${currentSession.no}`, JSON.stringify(todoList));
+            let no = currentSession.no;
+            cloudData.userData[no].todos.splice(idx, 1);
+            await saveCloudData();
             renderTodos();
         }
 
         function renderTodos() {
             if (!currentSession || currentSession.isAdmin) return;
-            let todoList = JSON.parse(localStorage.getItem(`v61_todos_${currentSession.no}`)) || [];
+            let no = currentSession.no;
+            let todos = (cloudData.userData[no] && cloudData.userData[no].todos) || [];
             let list = document.getElementById('todoList');
             list.innerHTML = '';
-            todoList.forEach((todo, idx) => {
+            todos.forEach((todo, idx) => {
                 list.innerHTML += `
                     <li class="${todo.completed ? 'todo-item completed' : 'todo-item'}">
                         <div><strong>${todo.sub}</strong> - ${todo.desc} <span style="font-size:0.8rem; opacity:0.7;">(Teslim: ${todo.day})</span></div>
@@ -801,29 +739,9 @@
                     </li>
                 `;
             });
-            updateProfileUI();
         }
 
-        // --- 5. PROFİL GÜNCELLEME ---
-        function updateProfileUI() {
-            if (!currentSession || currentSession.isAdmin) return;
-            document.getElementById('profName').textContent = currentSession.name;
-            document.getElementById('profNo').textContent = currentSession.no;
-            document.getElementById('profClass').textContent = `${currentSession.class} / ${currentSession.branch}`;
-            
-            let mins = Math.floor(activeSeconds / 60);
-            let secs = activeSeconds % 60;
-            document.getElementById('profTime').textContent = `${mins} dk ${secs} sn`;
-
-            let todos = JSON.parse(localStorage.getItem(`v61_todos_${currentSession.no}`)) || [];
-            let completedTodos = todos.filter(t => t.completed).length;
-            document.getElementById('profTodoCount').textContent = completedTodos;
-
-            document.getElementById('profTitle').textContent = document.getElementById('repTitle').textContent;
-        }
-
-        // Başlangıçta oturum durumunu doğrula
-        checkAuth();
+        initApp();
     </script>
 </body>
 </html>
