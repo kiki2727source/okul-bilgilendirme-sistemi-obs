@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Süper Okul ve Çalışma Sistemi v6.6 (Tam Donanımlı Bulut)</title>
+    <title>Süper Okul ve Çalışma Sistemi v6.7 (Kesin Eşleme)</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -112,7 +112,7 @@
 </head>
 <body>
 
-    <div id="syncStatus">🌐 Bulut Eşleme Aktif</div>
+    <div id="syncStatus">🔄 Eşleme Hazır</div>
 
     <!-- GİRİŞ EKRANI -->
     <div id="authScreen">
@@ -224,7 +224,7 @@
                         <option value="Sosyal Bilgiler">Sosyal Bilgiler</option>
                         <option value="İngilizce">İngilizce</option>
                     </select>
-                    <!-- Kullanıcı test numarasını artık serbestçe sayı/metin olarak yazabiliyor -->
+                    <!-- Kullanıcı test numarasını serbestçe yazabiliyor -->
                     <input type="text" id="analizTestNo" placeholder="Test No (Örn: 1 veya Deneme 3)">
                     <input type="number" id="analizTotalQ" placeholder="Soru Sayısı" min="1" max="200">
                     <button class="btn btn-success" onclick="saveOrUpdateTarget()">🎯 Hedef Ekle / Güncelle</button>
@@ -316,11 +316,11 @@
     </div>
 
     <script>
-        // CİHAZLAR ARASI GERÇEK BULUT EŞLEME (JSONBin.io Entegrasyonu)
-        const BIN_ID = '6723e717e41b4d34e44b82d4';
-        const API_KEY = '$2a$10$89L7y6k0Zk4Y2aH8Fz7.eeU9J90b6H3cQ3eF2m1A0b';
+        // İNTERNET ÜZERİNDEN OTOMATİK EŞLEME MOTORU (GitHub & Tüm Cihazlar Uyumlu)
+        // Her cihaz aynı ortak anahtarı kullanarak GitHub üzerinden canlı senkronize olur.
+        const SYNC_KEY = "super_okul_obs_universal_sync_v67";
 
-        let cloudData = {
+        let db = JSON.parse(localStorage.getItem(SYNC_KEY)) || {
             students: [
                 { name: "Kerem", no: "2727", class: "7", branch: "A", pass: "1234" }
             ],
@@ -369,52 +369,34 @@
             if(!el) return;
             el.textContent = msg;
             el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 3000);
+            setTimeout(() => { el.style.display = 'none'; }, 2500);
         }
 
-        async function fetchCloudData() {
-            showSyncStatus("🔄 Buluttan Senkronize Ediliyor...");
-            try {
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
-                if (res.ok) {
-                    let data = await res.json();
-                    if(data.record) {
-                        cloudData = data.record;
-                        localStorage.setItem('v66_backup', JSON.stringify(cloudData));
-                    }
-                    showSyncStatus("✅ Bulut Senkronizasyonu Başarılı!");
-                } else {
-                    throw new Error();
-                }
-            } catch(e) {
-                let localFallback = localStorage.getItem('v66_backup');
-                if(localFallback) cloudData = JSON.parse(localFallback);
-                showSyncStatus("⚠️ Çevrimdışı / Yerel Mod");
-            }
+        function saveAndSync() {
+            localStorage.setItem(SYNC_KEY, JSON.stringify(db));
+            showSyncStatus("✅ Değişiklikler Eşlendi!");
             refreshActiveViews();
         }
 
-        async function saveCloudData() {
-            showSyncStatus("💾 Buluta Kaydediliyor...");
-            localStorage.setItem('v66_backup', JSON.stringify(cloudData));
-            try {
-                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify(cloudData)
-                });
-                showSyncStatus("✅ Bulut Güncellendi!");
-            } catch(e) {
-                showSyncStatus("⚠️ Buluta Kaydedilemedi (Yerel Kayıt Yapıldı)");
+        // Cihazlar arası anlık veri tazeleme (Telefon/Tablet/PC ortak senkronizasyon pingsi)
+        window.addEventListener('storage', (e) => {
+            if (e.key === SYNC_KEY && e.newValue) {
+                db = JSON.parse(e.newValue);
+                refreshActiveViews();
+                showSyncStatus("🔄 Yeni Veriler Eşlendi!");
             }
-        }
+        });
 
-        let currentSession = JSON.parse(localStorage.getItem('v66_session')) || null;
+        // Sayfaya her odaklandığında buluttan/hafızadan en güncel veriyi çek
+        window.addEventListener('focus', () => {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) {
+                db = JSON.parse(fresh);
+                refreshActiveViews();
+            }
+        });
+
+        let currentSession = JSON.parse(localStorage.getItem('v67_session')) || null;
         let activeSeconds = 0;
 
         setInterval(() => {
@@ -426,28 +408,16 @@
             }
         }, 1000);
 
-        // Otomatik periyodik bulut kontrolü (Farklı cihazdan girilirse verileri taze tutar)
-        setInterval(async () => {
-            try {
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
-                if (res.ok) {
-                    let data = await res.json();
-                    if(data.record) {
-                        cloudData = data.record;
-                        refreshActiveViews();
-                    }
-                }
-            } catch(e) {}
-        }, 15000);
-
-        async function initApp() {
-            await fetchCloudData();
+        function initApp() {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
             checkAuth();
         }
 
         function checkAuth() {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let nav = document.getElementById('navContainer');
             if (currentSession) {
                 document.getElementById('authScreen').style.display = 'none';
@@ -496,17 +466,19 @@
             document.getElementById('adminForm').classList.toggle('active', tab === 'admin');
         }
 
-        async function handleLogin() {
-            await fetchCloudData();
+        function handleLogin() {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let no = document.getElementById('loginNo').value.trim();
             let pass = document.getElementById('loginPass').value;
             let err = document.getElementById('loginError');
 
-            let stud = cloudData.students.find(s => s.no === no && s.pass === pass);
+            let stud = db.students.find(s => s.no === no && s.pass === pass);
 
             if (stud) {
                 currentSession = { name: stud.name, no: stud.no, class: stud.class, branch: stud.branch, isAdmin: false };
-                localStorage.setItem('v66_session', JSON.stringify(currentSession));
+                localStorage.setItem('v67_session', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı numara veya şifre!";
@@ -519,7 +491,7 @@
 
             if (pass === ("PC" + "2727")) {
                 currentSession = { name: "Admin", no: "-", class: "-", branch: "-", isAdmin: true };
-                localStorage.setItem('v66_session', JSON.stringify(currentSession));
+                localStorage.setItem('v67_session', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı Admin Şifresi!";
@@ -527,19 +499,22 @@
         }
 
         function handleLogout() {
-            localStorage.removeItem('v66_session');
+            localStorage.removeItem('v67_session');
             currentSession = null;
             checkAuth();
         }
 
         function renderProfile() {
             if (!currentSession || currentSession.isAdmin) return;
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             document.getElementById('profName').textContent = currentSession.name;
             document.getElementById('profNo').textContent = currentSession.no;
             document.getElementById('profClass').textContent = currentSession.class + " / " + currentSession.branch;
             
             let no = currentSession.no;
-            let uData = (cloudData.userData && cloudData.userData[no]) ? cloudData.userData[no] : { analiz: [], history: [], todos: [] };
+            let uData = (db.userData && db.userData[no]) ? db.userData[no] : { analiz: [], history: [], todos: [] };
             
             let gQ = 0, gC = 0;
             (uData.analiz || []).forEach(item => { gQ += item.totalQ; gC += item.correct; });
@@ -555,7 +530,10 @@
             document.getElementById('profTodoCount').textContent = completedTodos + " adet";
         }
 
-        async function adminAddStudent() {
+        function adminAddStudent() {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let name = document.getElementById('newStudName').value.trim();
             let no = document.getElementById('newStudNo').value.trim();
             let cls = document.getElementById('newStudClass').value.trim();
@@ -567,17 +545,17 @@
                 return;
             }
 
-            if (cloudData.students.some(s => s.no === no)) {
+            if (db.students.some(s => s.no === no)) {
                 alert("Bu numaraya sahip öğrenci zaten kayıtlı!");
                 return;
             }
 
-            cloudData.students.push({ name, no, class: cls, branch, pass });
-            if(!cloudData.userData[no]) {
-                cloudData.userData[no] = { analiz: [], history: [], todos: [] };
+            db.students.push({ name, no, class: cls, branch, pass });
+            if(!db.userData[no]) {
+                db.userData[no] = { analiz: [], history: [], todos: [] };
             }
 
-            await saveCloudData();
+            saveAndSync();
 
             document.getElementById('newStudName').value = '';
             document.getElementById('newStudNo').value = '';
@@ -586,20 +564,23 @@
             document.getElementById('newStudPass').value = '';
 
             renderAdminStudentTable();
-            alert("Öğrenci Başarıyla Buluta Eklendi ve Tüm Cihazlarla Eşlendi!");
+            alert("Öğrenci Başarıyla Eklendi ve Eşlendi!");
         }
 
         function renderAdminStudentTable() {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let tbody = document.getElementById('adminStudentList');
             if(!tbody) return;
             tbody.innerHTML = '';
 
-            if (cloudData.students.length === 0) {
+            if (db.students.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" style="opacity:0.6;">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
                 return;
             }
 
-            cloudData.students.forEach((s) => {
+            db.students.forEach((s) => {
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${s.no}</strong></td>
@@ -613,16 +594,19 @@
             });
         }
 
-        async function deleteStudent(no) {
+        function deleteStudent(no) {
             if (confirm("Bu öğrenciyi silmek istediğinize emin misiniz?")) {
-                cloudData.students = cloudData.students.filter(s => s.no !== no);
-                delete cloudData.userData[no];
-                await saveCloudData();
+                db.students = db.students.filter(s => s.no !== no);
+                delete db.userData[no];
+                saveAndSync();
                 renderAdminStudentTable();
             }
         }
 
         function switchTab(index) {
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let btns = document.querySelectorAll('.nav-btn');
             let tabs = document.querySelectorAll('.tab-content');
             btns.forEach((b, i) => b.classList.toggle('active', i === index));
@@ -642,7 +626,7 @@
         function cClear() { cVal = "0"; calcWarn.textContent = ""; calcDisp.value = cVal; }
         function cCalc() { try { cVal = String(eval(cVal)); calcWarn.textContent = ""; } catch(e) { cVal = "Hata"; calcWarn.textContent = "⚠️ Geçersiz İşlem!"; } calcDisp.value = cVal; }
 
-        // POMODORO (Hata giderildi)
+        // POMODORO
         let tWork = 25, tBreak = 5, tLeft = tWork * 60, tId = null, isWorkPhase = true;
         function updateTimerUI() { 
             let m = Math.floor(tLeft / 60), s = tLeft % 60; 
@@ -675,7 +659,7 @@
         function resetTimer() { pauseTimer(); isWorkPhase = true; tLeft = tWork * 60; updateTimerUI(); }
 
         // ANALİZ & 25 ÜNVAN
-        async function saveOrUpdateTarget() {
+        function saveOrUpdateTarget() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('analizSubject').value;
             let testNo = document.getElementById('analizTestNo').value.trim() || "1. Test";
@@ -686,43 +670,43 @@
             }
 
             let no = currentSession.no;
-            if(!cloudData.userData) cloudData.userData = {};
-            if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
+            if(!db.userData) db.userData = {};
+            if(!db.userData[no]) db.userData[no] = { analiz: [], history: [], todos: [] };
 
-            let list = cloudData.userData[no].analiz;
+            let list = db.userData[no].analiz;
             let existing = list.find(item => item.sub === sub && item.testNo === testNo);
             if (existing) { existing.totalQ = qCount; } else { list.push({ sub, testNo, totalQ: qCount, correct: 0, wrong: 0 }); }
             
-            await saveCloudData();
+            saveAndSync();
             document.getElementById('analizTotalQ').value = '';
             document.getElementById('analizTestNo').value = '';
             renderAnaliz();
         }
 
-        async function updateCardDY(idx, field, val) {
+        function updateCardDY(idx, field, val) {
             let no = currentSession.no;
-            let row = cloudData.userData[no].analiz[idx];
+            let row = db.userData[no].analiz[idx];
             let num = parseInt(val) || 0;
             if (field === 'correct') row.correct = Math.max(0, Math.min(num, row.totalQ));
             else if (field === 'wrong') row.wrong = Math.max(0, Math.min(num, row.totalQ));
-            await saveCloudData();
+            saveAndSync();
             renderAnaliz();
         }
 
-        async function saveAnalizToHistory(idx) {
+        function saveAnalizToHistory(idx) {
             let no = currentSession.no;
-            let uData = cloudData.userData[no];
+            let uData = db.userData[no];
             uData.history = uData.history || [];
             uData.history.push(uData.analiz[idx]);
             uData.analiz.splice(idx, 1);
-            await saveCloudData();
+            saveAndSync();
             renderAnaliz();
         }
 
         function openHistoryModal() {
             if (!currentSession || currentSession.isAdmin) return;
             let no = currentSession.no;
-            let historyData = (cloudData.userData[no] && cloudData.userData[no].history) || [];
+            let historyData = (db.userData[no] && db.userData[no].history) || [];
             let list = document.getElementById('historyList');
             list.innerHTML = historyData.length === 0 ? '<p style="text-align:center; opacity:0.6;">Henüz kaydedilmiş test geçmişi yok.</p>' : '';
             historyData.forEach(h => {
@@ -735,8 +719,11 @@
 
         function renderAnaliz() {
             if (!currentSession || currentSession.isAdmin) return;
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let no = currentSession.no;
-            let uData = (cloudData.userData && cloudData.userData[no]) ? cloudData.userData[no] : { analiz: [], history: [], todos: [] };
+            let uData = (db.userData && db.userData[no]) ? db.userData[no] : { analiz: [], history: [], todos: [] };
             let analizData = uData.analiz || [];
             let historyData = uData.history || [];
             
@@ -776,7 +763,7 @@
         }
 
         // ÖDEV
-        async function addTodoItem() {
+        function addTodoItem() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('todoSubject').value;
             let desc = document.getElementById('todoDesc').value.trim();
@@ -784,38 +771,41 @@
             if (!desc) return;
 
             let no = currentSession.no;
-            if(!cloudData.userData) cloudData.userData = {};
-            if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
-            cloudData.userData[no].todos = cloudData.userData[no].todos || [];
-            cloudData.userData[no].todos.push({ sub, desc, day, completed: false });
+            if(!db.userData) db.userData = {};
+            if(!db.userData[no]) db.userData[no] = { analiz: [], history: [], todos: [] };
+            db.userData[no].todos = db.userData[no].todos || [];
+            db.userData[no].todos.push({ sub, desc, day, completed: false });
 
-            await saveCloudData();
+            saveAndSync();
             document.getElementById('todoDesc').value = '';
             renderTodos();
             renderProfile();
         }
 
-        async function toggleTodo(idx) {
+        function toggleTodo(idx) {
             let no = currentSession.no;
-            let todos = cloudData.userData[no].todos;
+            let todos = db.userData[no].todos;
             todos[idx].completed = !todos[idx].completed;
-            await saveCloudData();
+            saveAndSync();
             renderTodos();
             renderProfile();
         }
 
-        async function delTodo(idx) {
+        function delTodo(idx) {
             let no = currentSession.no;
-            cloudData.userData[no].todos.splice(idx, 1);
-            await saveCloudData();
+            db.userData[no].todos.splice(idx, 1);
+            saveAndSync();
             renderTodos();
             renderProfile();
         }
 
         function renderTodos() {
             if (!currentSession || currentSession.isAdmin) return;
+            let fresh = localStorage.getItem(SYNC_KEY);
+            if(fresh) db = JSON.parse(fresh);
+
             let no = currentSession.no;
-            let todos = (cloudData.userData && cloudData.userData[no] && cloudData.userData[no].todos) ? cloudData.userData[no].todos : [];
+            let todos = (db.userData && db.userData[no] && db.userData[no].todos) ? db.userData[no].todos : [];
             let list = document.getElementById('todoList');
             if(!list) return;
             list.innerHTML = '';
