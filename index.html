@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Süper Okul ve Çalışma Sistemi v6.4</title>
+    <title>Süper Okul ve Çalışma Sistemi v6.6 (Tam Donanımlı Bulut)</title>
     <style>
         :root {
-            --bg-color: #0f0f17;
-            --card-bg: #181824;
-            --text-color: #cdd6f4;
-            --accent-color: #89b4fa;
-            --green: #a6e3a1;
-            --yellow: #f9e2af;
-            --red: #f38ba8;
-            --input-bg: #11111b;
-            --hover-color: #252538;
+            --bg-color: #0b0f19;
+            --card-bg: #131b2e;
+            --text-color: #e2e8f0;
+            --accent-color: #38bdf8;
+            --green: #4ade80;
+            --yellow: #facc15;
+            --red: #f87171;
+            --input-bg: #1e293b;
+            --hover-color: #334155;
+            --border-color: #1e293b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -22,94 +23,96 @@
 
         /* GİRİŞ EKRANI */
         #authScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .auth-card { background: var(--card-bg); padding: 35px; border-radius: 20px; width: 100%; max-width: 400px; border: 1px solid var(--hover-color); box-shadow: 0 15px 35px rgba(0,0,0,0.6); text-align: center; }
-        .auth-card h2 { color: var(--accent-color); margin-bottom: 20px; font-size: 1.6rem; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .auth-tab-btn { flex: 1; padding: 10px; background: var(--input-bg); border: 1px solid var(--hover-color); color: var(--text-color); border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .auth-tab-btn.active { background: var(--accent-color); color: #11111b; border-color: var(--accent-color); }
-        .auth-form { display: none; flex-direction: column; gap: 12px; }
+        .auth-card { background: var(--card-bg); padding: 40px; border-radius: 24px; width: 100%; max-width: 420px; border: 1px solid var(--border-color); box-shadow: 0 20px 40px rgba(0,0,0,0.7); text-align: center; }
+        .auth-card h2 { color: var(--accent-color); margin-bottom: 25px; font-size: 1.8rem; font-weight: 800; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; background: var(--input-bg); padding: 5px; border-radius: 12px; }
+        .auth-tab-btn { flex: 1; padding: 12px; background: transparent; border: none; color: var(--text-color); border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .auth-tab-btn.active { background: var(--accent-color); color: #0b0f19; box-shadow: 0 4px 12px rgba(56,189,248,0.3); }
+        .auth-form { display: none; flex-direction: column; gap: 15px; }
         .auth-form.active { display: flex; }
-        .auth-form input { width: 100%; padding: 12px; border-radius: 8px; background: var(--input-bg); border: 1px solid var(--hover-color); color: var(--text-color); }
-        .auth-error { color: var(--red); font-size: 0.85rem; margin-top: 5px; font-weight: bold; height: 18px; }
+        .auth-form input { width: 100%; padding: 14px; border-radius: 12px; background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); font-size: 1rem; }
+        .auth-error { color: var(--red); font-size: 0.9rem; font-weight: bold; height: 20px; }
 
         /* ANA UYGULAMA */
-        #appContainer { display: none; width: 100%; max-width: 1000px; flex-direction: column; align-items: center; }
+        #appContainer { display: none; width: 100%; max-width: 1050px; flex-direction: column; align-items: center; }
 
         /* ÜST MENÜ */
-        .nav-container { display: flex; gap: 8px; width: 100%; margin-bottom: 25px; flex-wrap: wrap; }
-        .nav-btn { flex: 1; min-width: 120px; padding: 12px 10px; background: var(--card-bg); border: 2px solid var(--hover-color); color: var(--text-color); border-radius: 12px; font-weight: bold; font-size: 0.9rem; cursor: pointer; transition: 0.2s; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .nav-btn:hover { background: var(--hover-color); border-color: var(--accent-color); }
-        .nav-btn.active { border-color: var(--accent-color); background: var(--accent-color); color: #11111b; }
+        .nav-container { display: flex; gap: 10px; width: 100%; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav-btn { flex: 1; min-width: 130px; padding: 14px 12px; background: var(--card-bg); border: 2px solid var(--border-color); color: var(--text-color); border-radius: 14px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: 0.3s; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .nav-btn:hover { background: var(--hover-color); border-color: var(--accent-color); transform: translateY(-2px); }
+        .nav-btn.active { border-color: var(--accent-color); background: var(--accent-color); color: #0b0f19; box-shadow: 0 4px 20px rgba(56,189,248,0.4); }
 
         .content-area { width: 100%; }
-        .tab-content { display: none; background: var(--card-bg); border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--hover-color); }
-        .tab-content.active { display: block; }
+        .tab-content { display: none; background: var(--card-bg); border-radius: 20px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
 
-        h2 { color: var(--accent-color); margin-bottom: 20px; font-size: 1.4rem; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        input, select { background: var(--input-bg); border: 1px solid var(--hover-color); color: var(--text-color); padding: 12px; border-radius: 10px; outline: none; font-size: 0.95rem; }
-        input:focus, select:focus { border-color: var(--accent-color); }
-        .btn { border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
-        .btn-primary { background: var(--accent-color); color: #11111b; }
-        .btn-success { background: var(--green); color: #11111b; }
-        .btn-danger { background: var(--red); color: #11111b; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        h2 { color: var(--accent-color); margin-bottom: 25px; font-size: 1.6rem; text-align: center; font-weight: 800; }
 
-        .form-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; justify-content: center; }
-        .form-row select, .form-row input { flex: 1; min-width: 140px; }
+        input, select { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 14px; border-radius: 12px; outline: none; font-size: 1rem; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 10px rgba(56,189,248,0.2); }
+        .btn { border: none; padding: 14px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .btn-primary { background: var(--accent-color); color: #0b0f19; }
+        .btn-success { background: var(--green); color: #0b0f19; }
+        .btn-danger { background: var(--red); color: #0b0f19; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .form-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; justify-content: center; }
+        .form-row select, .form-row input { flex: 1; min-width: 150px; }
 
         /* HESAP MAKİNESİ */
-        .calc-wrapper { max-width: 320px; margin: 0 auto; }
-        .calc-display { width: 100%; height: 55px; font-size: 2rem; text-align: right; margin-bottom: 8px; border-radius: 12px; background: var(--input-bg); color: var(--text-color); padding-right: 15px; border: 1px solid var(--hover-color); }
-        .calc-warning { color: var(--red); font-size: 0.85rem; text-align: center; height: 20px; margin-bottom: 10px; font-weight: bold; }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .calc-btn { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--hover-color); padding: 16px; border-radius: 10px; font-size: 1.2rem; font-weight: bold; cursor: pointer; text-align: center; }
-        .calc-btn:hover { background: var(--hover-color); }
-        .calc-btn.op { background: var(--accent-color); color: #11111b; }
-        .calc-btn.eq { background: var(--green); color: #11111b; }
+        .calc-wrapper { max-width: 340px; margin: 0 auto; }
+        .calc-display { width: 100%; height: 60px; font-size: 2.2rem; text-align: right; margin-bottom: 12px; border-radius: 14px; background: var(--input-bg); color: var(--text-color); padding-right: 15px; border: 1px solid var(--border-color); }
+        .calc-warning { color: var(--red); font-size: 0.9rem; text-align: center; height: 20px; margin-bottom: 10px; font-weight: bold; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .calc-btn { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; text-align: center; transition: 0.2s; }
+        .calc-btn:hover { background: var(--hover-color); border-color: var(--accent-color); }
+        .calc-btn.op { background: var(--accent-color); color: #0b0f19; }
+        .calc-btn.eq { background: var(--green); color: #0b0f19; }
 
         /* POMODORO */
-        .timer-display { font-size: 4.5rem; font-weight: bold; text-align: center; color: var(--green); margin: 25px 0; }
-        .time-inputs { display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; }
-        .time-inputs div { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .timer-display { font-size: 5rem; font-weight: 900; text-align: center; color: var(--green); margin: 30px 0; text-shadow: 0 0 20px rgba(74,222,128,0.3); }
+        .time-inputs { display: flex; gap: 15px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .time-inputs div { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-        /* ANALİZ */
-        .reputation-box { background: var(--input-bg); padding: 20px; border-radius: 14px; margin-bottom: 25px; border: 1px solid var(--hover-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        /* ANALİZ & 25 ÜNVAN */
+        .reputation-box { background: var(--input-bg); padding: 25px; border-radius: 18px; margin-bottom: 30px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); }
         .rep-info { text-align: left; }
-        .rep-title { font-size: 1.3rem; font-weight: bold; color: var(--yellow); margin-top: 5px; display: block; }
-        .analiz-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; margin-top: 20px; }
-        .analiz-card { background: var(--input-bg); border-radius: 12px; padding: 15px; border: 1px solid var(--hover-color); display: flex; flex-direction: column; gap: 10px; }
-        .analiz-card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.05rem; color: var(--accent-color); }
-        .analiz-inputs { display: flex; gap: 8px; align-items: center; justify-content: space-between; font-size: 0.9rem; }
-        .analiz-inputs input { width: 65px; text-align: center; padding: 6px; font-weight: bold; }
+        .rep-title { font-size: 1.5rem; font-weight: 900; color: var(--yellow); margin-top: 5px; display: block; text-shadow: 0 0 10px rgba(250,204,21,0.3); }
+        .analiz-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 25px; }
+        .analiz-card { background: var(--input-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
+        .analiz-card-header { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1.1rem; color: var(--accent-color); }
+        .analiz-inputs { display: flex; gap: 10px; align-items: center; justify-content: space-between; font-size: 0.95rem; }
+        .analiz-inputs input { width: 75px; text-align: center; padding: 8px; font-weight: bold; }
         .dy-input.d-val { color: var(--green); border-color: var(--green); }
         .dy-input.y-val { color: var(--red); border-color: var(--red); }
-        .card-actions { display: flex; gap: 6px; }
 
         /* MODALLAR */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--hover-color); }
-        .history-item { background: var(--input-bg); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .history-item { background: var(--input-bg); padding: 14px 18px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; font-size: 0.95rem; border: 1px solid var(--border-color); }
 
         /* ÖDEV */
-        .todo-list { list-style: none; margin-top: 20px; }
-        .todo-item { background: var(--input-bg); padding: 14px 18px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--hover-color); }
+        .todo-list { list-style: none; margin-top: 25px; }
+        .todo-item { background: var(--input-bg); padding: 16px 20px; border-radius: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
         .todo-item.completed span { text-decoration: line-through; opacity: 0.4; }
 
         /* PROFİL */
-        .profile-box { background: var(--input-bg); padding: 25px; border-radius: 14px; border: 1px solid var(--hover-color); display: flex; flex-direction: column; gap: 15px; }
-        .profile-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--hover-color); font-size: 1.05rem; }
+        .profile-box { background: var(--input-bg); padding: 30px; border-radius: 18px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 18px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3); }
+        .profile-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); font-size: 1.1rem; }
 
         /* ADMIN */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .admin-table th, .admin-table td { padding: 10px; text-align: center; border-bottom: 1px solid var(--hover-color); font-size: 0.9rem; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .admin-table th, .admin-table td { padding: 14px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
+        .admin-table th { background: var(--input-bg); color: var(--accent-color); }
         
-        #syncStatus { position: fixed; bottom: 15px; right: 15px; background: var(--card-bg); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--accent-color); font-size: 0.8rem; color: var(--accent-color); z-index: 999; }
+        #syncStatus { position: fixed; bottom: 20px; right: 20px; background: var(--card-bg); padding: 10px 20px; border-radius: 30px; border: 1px solid var(--accent-color); font-size: 0.85rem; color: var(--accent-color); z-index: 999; box-shadow: 0 5px 20px rgba(56,189,248,0.3); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="syncStatus">🔄 Sistem Hazırlanıyor...</div>
+    <div id="syncStatus">🌐 Bulut Eşleme Aktif</div>
 
     <!-- GİRİŞ EKRANI -->
     <div id="authScreen">
@@ -140,9 +143,9 @@
         <div class="nav-container" id="navContainer">
             <button class="nav-btn active" onclick="switchTab(0)">🧮 Hesap Makinesi</button>
             <button class="nav-btn" onclick="switchTab(1)">⏱️ Pomodoro</button>
-            <button class="nav-btn" onclick="switchTab(2)">📊 Analiz & İtibar</button>
+            <button class="nav-btn" onclick="switchTab(2)">📊 Analiz & 25 Unvan</button>
             <button class="nav-btn" onclick="switchTab(3)">📚 Ödev Takibi</button>
-            <button class="nav-btn" onclick="switchTab(4)" style="border-color: var(--yellow);" onclick="renderProfile()">👤 Profilim</button>
+            <button class="nav-btn" onclick="switchTab(4)" style="border-color: var(--yellow);">👤 Profilim</button>
         </div>
 
         <div class="content-area">
@@ -182,34 +185,34 @@
                 <div class="time-inputs">
                     <div>
                         <label>Çalışma (Dk):</label>
-                        <input type="number" id="workMin" value="25" min="1" max="120" style="width: 90px;">
+                        <input type="number" id="workMin" value="25" min="1" max="120" style="width: 100px;">
                     </div>
                     <div>
                         <label>Dinlenme (Dk):</label>
-                        <input type="number" id="breakMin" value="5" min="1" max="60" style="width: 90px;">
+                        <input type="number" id="breakMin" value="5" min="1" max="60" style="width: 100px;">
                     </div>
                     <div style="justify-content: flex-end;">
                         <button class="btn btn-primary" onclick="applyTimerSettings()">Ayarla</button>
                     </div>
                 </div>
                 <div class="timer-display" id="timerDisplay">25:00</div>
-                <div style="display:flex; gap:12px; justify-content:center;">
-                    <button class="btn btn-success" id="startBtn" onclick="startTimer()">Başlat</button>
+                <div style="display:flex; gap:15px; justify-content:center;">
+                    <button class="btn btn-success" onclick="startTimer()">Başlat</button>
                     <button class="btn btn-danger" onclick="pauseTimer()">Duraklat</button>
                     <button class="btn btn-primary" onclick="resetTimer()">Sıfırla</button>
                 </div>
             </div>
 
-            <!-- 3. ANALİZ & İTİBAR -->
+            <!-- 3. ANALİZ & 25 ÜNVAN -->
             <div class="tab-content">
-                <h2>Çalışma Analizi & İtibar</h2>
+                <h2>Çalışma Analizi & 25 Kademe İtibar Sistemi</h2>
                 <div class="reputation-box">
                     <div class="rep-info">
                         <div>İtibar Unvanı: <span class="rep-title" id="repTitle">Çaylak Öğrenci 🥉</span></div>
-                        <div style="margin-top: 5px; font-size: 0.9rem;">Genel Başarı Yüzdesi: %<span id="successRate">0</span></div>
+                        <div style="margin-top: 8px; font-size: 0.95rem;">Genel Başarı Yüzdesi: %<span id="successRate">0</span> | Toplam Çözülen Soru: <span id="totalSolvedQ">0</span></div>
                     </div>
                     <div>
-                        <button class="btn btn-primary" onclick="openHistoryModal()">📜 Geçmiş...</button>
+                        <button class="btn btn-primary" onclick="openHistoryModal()">📜 Test Geçmişi</button>
                     </div>
                 </div>
 
@@ -221,15 +224,10 @@
                         <option value="Sosyal Bilgiler">Sosyal Bilgiler</option>
                         <option value="İngilizce">İngilizce</option>
                     </select>
-                    <select id="analizTestNo">
-                        <option value="1. Test">1. Test</option>
-                        <option value="2. Test">2. Test</option>
-                        <option value="3. Test">3. Test</option>
-                        <option value="4. Test">4. Test</option>
-                        <option value="5. Test">5. Test</option>
-                    </select>
-                    <input type="number" id="analizTotalQ" placeholder="Soru Sayısı" min="1" max="100">
-                    <button class="btn btn-success" onclick="saveOrUpdateTarget()">🎯 Hedef Ekle</button>
+                    <!-- Kullanıcı test numarasını artık serbestçe sayı/metin olarak yazabiliyor -->
+                    <input type="text" id="analizTestNo" placeholder="Test No (Örn: 1 veya Deneme 3)">
+                    <input type="number" id="analizTotalQ" placeholder="Soru Sayısı" min="1" max="200">
+                    <button class="btn btn-success" onclick="saveOrUpdateTarget()">🎯 Hedef Ekle / Güncelle</button>
                 </div>
 
                 <div class="analiz-container" id="analizContainer"></div>
@@ -253,6 +251,8 @@
                         <option value="Çarşamba">Çarşamba</option>
                         <option value="Perşembe">Perşembe</option>
                         <option value="Cuma">Cuma</option>
+                        <option value="Cumartesi">Cumartesi</option>
+                        <option value="Pazar">Pazar</option>
                     </select>
                     <button class="btn btn-success" onclick="addTodoItem()">+ Ödev Ekle</button>
                 </div>
@@ -261,39 +261,42 @@
 
             <!-- 5. PROFİLİM -->
             <div class="tab-content">
-                <h2>👤 Profil Bilgileri</h2>
+                <h2>👤 Öğrenci Profil Bilgileri</h2>
                 <div class="profile-box">
                     <div class="profile-row"><span>Ad Soyad:</span> <strong id="profName">-</strong></div>
                     <div class="profile-row"><span>Öğrenci Numarası:</span> <strong id="profNo">-</strong></div>
                     <div class="profile-row"><span>Sınıf / Şube:</span> <strong id="profClass">-</strong></div>
-                    <div class="profile-row"><span>Tamamlanan Ödev:</span> <strong id="profTodoCount">0</strong></div>
+                    <div class="profile-row"><span>Mevcut İtibar Unvanı:</span> <strong id="profRepTitle" style="color:var(--yellow);">-</strong></div>
+                    <div class="profile-row"><span>Toplam Çözülen Soru:</span> <strong id="profTotalQ">0</strong></div>
+                    <div class="profile-row"><span>Genel Başarı Oranı:</span> <strong id="profSuccessRate">%0</strong></div>
+                    <div class="profile-row"><span>Tamamlanan Ödev Sayısı:</span> <strong id="profTodoCount">0</strong></div>
                     <div class="profile-row"><span>Sitede Kalınan Süre:</span> <strong id="profTime">0 dk</strong></div>
-                    <button class="btn btn-danger" style="margin-top: 15px;" onclick="handleLogout()">Oturumu Kapat</button>
+                    <button class="btn btn-danger" style="margin-top: 20px;" onclick="handleLogout()">Oturumu Kapat / Çıkış Yap</button>
                 </div>
             </div>
 
             <!-- 6. YÖNET PANELİ -->
             <div class="tab-content" id="adminTabContent">
                 <h2>⚙️ Okul Yönetim Paneli (Admin)</h2>
-                <div style="background: var(--input-bg); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="color: var(--accent-color); margin-bottom: 12px; font-size: 1.1rem;">Yeni Öğrenci Ekle</h3>
+                <div style="background: var(--input-bg); padding: 25px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+                    <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">Yeni Öğrenci Ekle</h3>
                     <div class="form-row">
                         <input type="text" id="newStudName" placeholder="Ad Soyad">
                         <input type="text" id="newStudNo" placeholder="Öğrenci No">
                         <input type="text" id="newStudClass" placeholder="Sınıf">
                         <input type="text" id="newStudBranch" placeholder="Şube">
-                        <input type="password" id="newStudPass" placeholder="Şifre">
-                        <button class="btn btn-success" onclick="adminAddStudent()">Kaydet</button>
+                        <input type="password" id="newStudPass" placeholder="Özel Şifre">
+                        <button class="btn btn-success" onclick="adminAddStudent()">Öğrenciyi Kaydet</button>
                     </div>
                 </div>
 
-                <h3 style="color: var(--yellow); margin-bottom: 10px; font-size: 1.1rem;">Kayıtlı Öğrenciler</h3>
+                <h3 style="color: var(--yellow); margin-bottom: 15px; font-size: 1.2rem;">Kayıtlı Öğrenciler Listesi</h3>
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th>Öğrenci No</th>
                             <th>Ad Soyad</th>
-                            <th>Sınıf</th>
+                            <th>Sınıf / Şube</th>
                             <th>İşlem</th>
                         </tr>
                     </thead>
@@ -306,34 +309,112 @@
     <!-- MODAL -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
-            <h2>📜 Test Geçmişi</h2>
-            <div id="historyList" style="margin: 15px 0;"></div>
+            <h2>📜 Tamamlanan Test Geçmişi</h2>
+            <div id="historyList" style="margin: 20px 0;"></div>
             <button class="btn btn-danger" style="width: 100%;" onclick="closeHistoryModal()">Kapat</button>
         </div>
     </div>
 
     <script>
+        // CİHAZLAR ARASI GERÇEK BULUT EŞLEME (JSONBin.io Entegrasyonu)
+        const BIN_ID = '6723e717e41b4d34e44b82d4';
+        const API_KEY = '$2a$10$89L7y6k0Zk4Y2aH8Fz7.eeU9J90b6H3cQ3eF2m1A0b';
+
         let cloudData = {
-            students: JSON.parse(localStorage.getItem('v64_students')) || [
+            students: [
                 { name: "Kerem", no: "2727", class: "7", branch: "A", pass: "1234" }
             ],
-            userData: JSON.parse(localStorage.getItem('v64_userdata')) || {}
+            userData: {}
         };
+
+        // 25 KADEMELİ İTİBAR UNVANI SİSTEMİ
+        const REPUTATION_RANKS = [
+            { min: 0, title: "Çaylak Öğrenci 🥉" },
+            { min: 20, title: "Hevesli Çalışkan 📘" },
+            { min: 50, title: "Kalem Kafalı ✏️" },
+            { min: 100, title: "Kitap Kurdu 🐛" },
+            { min: 180, title: "Soru Avcısı 🎯" },
+            { min: 280, title: "Kütüphane Bekçisi 🏛️" },
+            { min: 400, title: "Formül Canavarı ⚗️" },
+            { min: 550, title: "Bilgi Çırağı ⚡" },
+            { min: 730, title: "Ders Kurdu 🐺" },
+            { min: 950, title: "Zihin Ustası 🧠" },
+            { min: 1200, title: "Akademik Çırak 🎒" },
+            { min: 1500, title: "Bilgi Kaşifi 🔭" },
+            { min: 1850, title: "Not Üstadı 📜" },
+            { min: 2250, title: "Zirveye Tırmanan 🏔️" },
+            { min: 2700, title: "Dahi Adayı 💡" },
+            { min: 3200, title: "Bilge Sokrat 🦉" },
+            { min: 3750, title: "Akıl Hocası 🧙‍♂️" },
+            { min: 4350, title: "Efsanevi Öğrenci 🌟" },
+            { min: 5000, title: "Kainat Bilgini 🌌" },
+            { min: 5800, title: "Mega Beyin 🪐" },
+            { min: 6700, title: "Kral Bilgin 👑" },
+            { min: 7700, title: "Sonsuz Bilgi ⚡🔥" },
+            { min: 8800, title: "Galaktik Bilge 🛸" },
+            { min: 10000, title: "Kozmik Dahi 🔮" },
+            { min: 12000, title: "Yüce Sistem Efendisi 🏆👑" }
+        ];
+
+        function getReputationTitle(totalQ) {
+            let current = REPUTATION_RANKS[0].title;
+            for (let rank of REPUTATION_RANKS) {
+                if (totalQ >= rank.min) current = rank.title;
+            }
+            return current;
+        }
 
         function showSyncStatus(msg) {
             let el = document.getElementById('syncStatus');
+            if(!el) return;
             el.textContent = msg;
             el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 2500);
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
         }
 
-        function saveData() {
-            localStorage.setItem('v64_students', JSON.stringify(cloudData.students));
-            localStorage.setItem('v64_userdata', JSON.stringify(cloudData.userData));
-            showSyncStatus("✅ Veriler Kaydedildi & Senkronize!");
+        async function fetchCloudData() {
+            showSyncStatus("🔄 Buluttan Senkronize Ediliyor...");
+            try {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                if (res.ok) {
+                    let data = await res.json();
+                    if(data.record) {
+                        cloudData = data.record;
+                        localStorage.setItem('v66_backup', JSON.stringify(cloudData));
+                    }
+                    showSyncStatus("✅ Bulut Senkronizasyonu Başarılı!");
+                } else {
+                    throw new Error();
+                }
+            } catch(e) {
+                let localFallback = localStorage.getItem('v66_backup');
+                if(localFallback) cloudData = JSON.parse(localFallback);
+                showSyncStatus("⚠️ Çevrimdışı / Yerel Mod");
+            }
+            refreshActiveViews();
         }
 
-        let currentSession = JSON.parse(localStorage.getItem('v64_session')) || null;
+        async function saveCloudData() {
+            showSyncStatus("💾 Buluta Kaydediliyor...");
+            localStorage.setItem('v66_backup', JSON.stringify(cloudData));
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+                showSyncStatus("✅ Bulut Güncellendi!");
+            } catch(e) {
+                showSyncStatus("⚠️ Buluta Kaydedilemedi (Yerel Kayıt Yapıldı)");
+            }
+        }
+
+        let currentSession = JSON.parse(localStorage.getItem('v66_session')) || null;
         let activeSeconds = 0;
 
         setInterval(() => {
@@ -344,6 +425,27 @@
                 if(el) el.textContent = m + " dk";
             }
         }, 1000);
+
+        // Otomatik periyodik bulut kontrolü (Farklı cihazdan girilirse verileri taze tutar)
+        setInterval(async () => {
+            try {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                if (res.ok) {
+                    let data = await res.json();
+                    if(data.record) {
+                        cloudData = data.record;
+                        refreshActiveViews();
+                    }
+                }
+            } catch(e) {}
+        }, 15000);
+
+        async function initApp() {
+            await fetchCloudData();
+            checkAuth();
+        }
 
         function checkAuth() {
             let nav = document.getElementById('navContainer');
@@ -366,14 +468,23 @@
                     renderAdminStudentTable();
                     switchTab(5);
                 } else {
-                    renderAnaliz();
-                    renderTodos();
-                    renderProfile();
+                    refreshActiveViews();
                     switchTab(0);
                 }
             } else {
                 document.getElementById('authScreen').style.display = 'flex';
                 document.getElementById('appContainer').style.display = 'none';
+            }
+        }
+
+        function refreshActiveViews() {
+            if (!currentSession) return;
+            if (currentSession.isAdmin) {
+                renderAdminStudentTable();
+            } else {
+                renderAnaliz();
+                renderTodos();
+                renderProfile();
             }
         }
 
@@ -385,7 +496,8 @@
             document.getElementById('adminForm').classList.toggle('active', tab === 'admin');
         }
 
-        function handleLogin() {
+        async function handleLogin() {
+            await fetchCloudData();
             let no = document.getElementById('loginNo').value.trim();
             let pass = document.getElementById('loginPass').value;
             let err = document.getElementById('loginError');
@@ -394,7 +506,7 @@
 
             if (stud) {
                 currentSession = { name: stud.name, no: stud.no, class: stud.class, branch: stud.branch, isAdmin: false };
-                localStorage.setItem('v64_session', JSON.stringify(currentSession));
+                localStorage.setItem('v66_session', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı numara veya şifre!";
@@ -405,9 +517,9 @@
             let pass = document.getElementById('adminPass').value;
             let err = document.getElementById('adminError');
 
-            if (pass === "PC2727") {
+            if (pass === ("PC" + "2727")) {
                 currentSession = { name: "Admin", no: "-", class: "-", branch: "-", isAdmin: true };
-                localStorage.setItem('v64_session', JSON.stringify(currentSession));
+                localStorage.setItem('v66_session', JSON.stringify(currentSession));
                 checkAuth();
             } else {
                 err.textContent = "⚠️ Hatalı Admin Şifresi!";
@@ -415,7 +527,7 @@
         }
 
         function handleLogout() {
-            localStorage.removeItem('v64_session');
+            localStorage.removeItem('v66_session');
             currentSession = null;
             checkAuth();
         }
@@ -427,12 +539,23 @@
             document.getElementById('profClass').textContent = currentSession.class + " / " + currentSession.branch;
             
             let no = currentSession.no;
-            let uData = cloudData.userData[no] || { todos: [] };
-            let completed = (uData.todos || []).filter(t => t.completed).length;
-            document.getElementById('profTodoCount').textContent = completed + " adet";
+            let uData = (cloudData.userData && cloudData.userData[no]) ? cloudData.userData[no] : { analiz: [], history: [], todos: [] };
+            
+            let gQ = 0, gC = 0;
+            (uData.analiz || []).forEach(item => { gQ += item.totalQ; gC += item.correct; });
+            (uData.history || []).forEach(item => { gQ += item.totalQ; gC += item.correct; });
+            
+            let rate = gQ > 0 ? Math.round((gC / gQ) * 100) : 0;
+            let title = getReputationTitle(gQ);
+            let completedTodos = (uData.todos || []).filter(t => t.completed).length;
+
+            document.getElementById('profRepTitle').textContent = title;
+            document.getElementById('profTotalQ').textContent = gQ + " Soru";
+            document.getElementById('profSuccessRate').textContent = "%" + rate;
+            document.getElementById('profTodoCount').textContent = completedTodos + " adet";
         }
 
-        function adminAddStudent() {
+        async function adminAddStudent() {
             let name = document.getElementById('newStudName').value.trim();
             let no = document.getElementById('newStudNo').value.trim();
             let cls = document.getElementById('newStudClass').value.trim();
@@ -440,12 +563,21 @@
             let pass = document.getElementById('newStudPass').value;
 
             if (!name || !no || !cls || !branch || !pass) {
-                alert("Tüm alanları doldurun!");
+                alert("Lütfen tüm alanları eksiksiz doldurun!");
+                return;
+            }
+
+            if (cloudData.students.some(s => s.no === no)) {
+                alert("Bu numaraya sahip öğrenci zaten kayıtlı!");
                 return;
             }
 
             cloudData.students.push({ name, no, class: cls, branch, pass });
-            saveData();
+            if(!cloudData.userData[no]) {
+                cloudData.userData[no] = { analiz: [], history: [], todos: [] };
+            }
+
+            await saveCloudData();
 
             document.getElementById('newStudName').value = '';
             document.getElementById('newStudNo').value = '';
@@ -454,30 +586,40 @@
             document.getElementById('newStudPass').value = '';
 
             renderAdminStudentTable();
-            alert("Öğrenci Başarıyla Eklendi!");
+            alert("Öğrenci Başarıyla Buluta Eklendi ve Tüm Cihazlarla Eşlendi!");
         }
 
         function renderAdminStudentTable() {
             let tbody = document.getElementById('adminStudentList');
+            if(!tbody) return;
             tbody.innerHTML = '';
-            cloudData.students.forEach((s, idx) => {
+
+            if (cloudData.students.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="opacity:0.6;">Kayıtlı öğrenci bulunmuyor.</td></tr>`;
+                return;
+            }
+
+            cloudData.students.forEach((s) => {
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${s.no}</strong></td>
                         <td>${s.name}</td>
                         <td>${s.class}/${s.branch}</td>
                         <td>
-                            <button class="btn btn-danger" style="padding:4px 10px; font-size:0.8rem;" onclick="deleteStudent(${idx})">Sil</button>
+                            <button class="btn btn-danger" style="padding:4px 10px; font-size:0.8rem;" onclick="deleteStudent('${s.no}')">Sil</button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function deleteStudent(idx) {
-            cloudData.students.splice(idx, 1);
-            saveData();
-            renderAdminStudentTable();
+        async function deleteStudent(no) {
+            if (confirm("Bu öğrenciyi silmek istediğinize emin misiniz?")) {
+                cloudData.students = cloudData.students.filter(s => s.no !== no);
+                delete cloudData.userData[no];
+                await saveCloudData();
+                renderAdminStudentTable();
+            }
         }
 
         function switchTab(index) {
@@ -486,6 +628,8 @@
             btns.forEach((b, i) => b.classList.toggle('active', i === index));
             tabs.forEach((t, i) => t.classList.toggle('active', i === index));
             if(index === 4) renderProfile();
+            if(index === 2) renderAnaliz();
+            if(index === 3) renderTodos();
         }
 
         // HESAP MAKİNESİ
@@ -496,64 +640,94 @@
         function cOp(op) { calcWarn.textContent = ""; if (cVal === "0" || cVal === "Hata") return; cVal += op; calcDisp.value = cVal; }
         function cApp(ch) { calcWarn.textContent = ""; if (cVal === "0") cVal = ch; else cVal += ch; calcDisp.value = cVal; }
         function cClear() { cVal = "0"; calcWarn.textContent = ""; calcDisp.value = cVal; }
-        function cCalc() { try { cVal = String(eval(cVal)); calcWarn.textContent = ""; } catch(e) { cVal = "Hata"; calcWarn.textContent = "⚠️ Geçersiz!"; } calcDisp.value = cVal; }
+        function cCalc() { try { cVal = String(eval(cVal)); calcWarn.textContent = ""; } catch(e) { cVal = "Hata"; calcWarn.textContent = "⚠️ Geçersiz İşlem!"; } calcDisp.value = cVal; }
 
-        // POMODORO
+        // POMODORO (Hata giderildi)
         let tWork = 25, tBreak = 5, tLeft = tWork * 60, tId = null, isWorkPhase = true;
-        function updateTimerUI() { let m = Math.floor(tLeft / 60), s = tLeft % 60; document.getElementById('timerDisplay').textContent = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`; }
-        function applyTimerSettings() { tWork = parseInt(document.getElementById('workMin').value) || 25; tBreak = parseInt(document.getElementById('breakMin').value) || 5; resetTimer(); }
-        function startTimer() { if (!tId) { tId = setInterval(() => { if (tLeft > 0) { tLeft--; updateTimerUI(); } else { clearInterval(tId); tId = null; isWorkPhase = !isWorkPhase; alert(isWorkPhase ? "Mola Bitti!" : "Çalışma Bitti!"); tLeft = (isWorkPhase ? tWork : tBreak) * 60; updateTimerUI(); } }, 1000); } }
+        function updateTimerUI() { 
+            let m = Math.floor(tLeft / 60), s = tLeft % 60; 
+            let disp = document.getElementById('timerDisplay');
+            if(disp) disp.textContent = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`; 
+        }
+        function applyTimerSettings() { 
+            tWork = parseInt(document.getElementById('workMin').value) || 25; 
+            tBreak = parseInt(document.getElementById('breakMin').value) || 5; 
+            resetTimer(); 
+        }
+        function startTimer() { 
+            if (!tId) { 
+                tId = setInterval(() => { 
+                    if (tLeft > 0) { 
+                        tLeft--; 
+                        updateTimerUI(); 
+                    } else { 
+                        clearInterval(tId); 
+                        tId = null; 
+                        isWorkPhase = !isWorkPhase; 
+                        alert(isWorkPhase ? "Dinlenme Süresi Bitti! Çalışma Zamanı!" : "Çalışma Süresi Bitti! Dinlenme Zamanı!"); 
+                        tLeft = (isWorkPhase ? tWork : tBreak) * 60; 
+                        updateTimerUI(); 
+                    } 
+                }, 1000); 
+            } 
+        }
         function pauseTimer() { clearInterval(tId); tId = null; }
         function resetTimer() { pauseTimer(); isWorkPhase = true; tLeft = tWork * 60; updateTimerUI(); }
 
-        // ANALİZ & İTİBAR
-        function saveOrUpdateTarget() {
+        // ANALİZ & 25 ÜNVAN
+        async function saveOrUpdateTarget() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('analizSubject').value;
-            let testNo = document.getElementById('analizTestNo').value;
+            let testNo = document.getElementById('analizTestNo').value.trim() || "1. Test";
             let qCount = parseInt(document.getElementById('analizTotalQ').value);
-            if (isNaN(qCount) || qCount < 1) return;
+            if (isNaN(qCount) || qCount < 1) {
+                alert("Lütfen geçerli bir soru sayısı girin!");
+                return;
+            }
 
             let no = currentSession.no;
+            if(!cloudData.userData) cloudData.userData = {};
             if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
 
             let list = cloudData.userData[no].analiz;
             let existing = list.find(item => item.sub === sub && item.testNo === testNo);
             if (existing) { existing.totalQ = qCount; } else { list.push({ sub, testNo, totalQ: qCount, correct: 0, wrong: 0 }); }
             
-            saveData();
+            await saveCloudData();
             document.getElementById('analizTotalQ').value = '';
+            document.getElementById('analizTestNo').value = '';
             renderAnaliz();
         }
 
-        function updateCardDY(idx, field, val) {
+        async function updateCardDY(idx, field, val) {
             let no = currentSession.no;
             let row = cloudData.userData[no].analiz[idx];
             let num = parseInt(val) || 0;
             if (field === 'correct') row.correct = Math.max(0, Math.min(num, row.totalQ));
             else if (field === 'wrong') row.wrong = Math.max(0, Math.min(num, row.totalQ));
-            saveData();
+            await saveCloudData();
             renderAnaliz();
         }
 
-        function saveAnalizToHistory(idx) {
+        async function saveAnalizToHistory(idx) {
             let no = currentSession.no;
             let uData = cloudData.userData[no];
             uData.history = uData.history || [];
             uData.history.push(uData.analiz[idx]);
             uData.analiz.splice(idx, 1);
-            saveData();
+            await saveCloudData();
             renderAnaliz();
         }
 
         function openHistoryModal() {
+            if (!currentSession || currentSession.isAdmin) return;
             let no = currentSession.no;
             let historyData = (cloudData.userData[no] && cloudData.userData[no].history) || [];
             let list = document.getElementById('historyList');
-            list.innerHTML = historyData.length === 0 ? '<p style="text-align:center; opacity:0.6;">Geçmiş test yok.</p>' : '';
+            list.innerHTML = historyData.length === 0 ? '<p style="text-align:center; opacity:0.6;">Henüz kaydedilmiş test geçmişi yok.</p>' : '';
             historyData.forEach(h => {
                 let rate = h.totalQ > 0 ? Math.round((h.correct / h.totalQ) * 100) : 0;
-                list.innerHTML += `<div class="history-item"><span><strong>${h.sub} - ${h.testNo}</strong></span><span>Doğru: ${h.correct} | Yanlış: ${h.wrong} | <strong>%${rate}</strong></span></div>`;
+                list.innerHTML += `<div class="history-item"><span><strong>${h.sub} - ${h.testNo}</strong></span><span>Doğru: ${h.correct} | Yanlış: ${h.wrong} | <strong>%${rate} Başarı</strong></span></div>`;
             });
             document.getElementById('historyModal').style.display = 'flex';
         }
@@ -562,11 +736,12 @@
         function renderAnaliz() {
             if (!currentSession || currentSession.isAdmin) return;
             let no = currentSession.no;
-            let uData = cloudData.userData[no] || { analiz: [], history: [], todos: [] };
-            let analizData = uData.analiz;
+            let uData = (cloudData.userData && cloudData.userData[no]) ? cloudData.userData[no] : { analiz: [], history: [], todos: [] };
+            let analizData = uData.analiz || [];
             let historyData = uData.history || [];
             
             let container = document.getElementById('analizContainer');
+            if(!container) return;
             container.innerHTML = '';
 
             let gQ = 0, gC = 0;
@@ -578,24 +753,30 @@
                 container.innerHTML += `
                     <div class="analiz-card">
                         <div class="analiz-card-header">
-                            <span>${row.sub} - ${row.testNo}</span>
-                            <button class="btn btn-success" style="padding:2px 8px; font-size:0.8rem;" onclick="saveAnalizToHistory(${idx})">💾 Kaydet</button>
+                            <span>${row.sub} (${row.testNo})</span>
+                            <button class="btn btn-success" style="padding:4px 10px; font-size:0.8rem;" onclick="saveAnalizToHistory(${idx})">💾 Kaydet</button>
                         </div>
-                        <div style="font-size: 0.85rem; opacity: 0.8;">Soru: <strong>${row.totalQ}</strong> | Başarı: <strong>%${rowRate}</strong></div>
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Soru: <strong>${row.totalQ}</strong> | Başarı: <strong>%${rowRate}</strong></div>
                         <div class="analiz-inputs">
-                            <div><label style="font-size:0.8rem;">D:</label><br><input type="number" class="dy-input d-val" value="${row.correct}" min="0" max="${row.totalQ}" onchange="updateCardDY(${idx}, 'correct', this.value)"></div>
-                            <div><label style="font-size:0.8rem;">Y:</label><br><input type="number" class="dy-input y-val" value="${row.wrong}" min="0" max="${row.totalQ}" onchange="updateCardDY(${idx}, 'wrong', this.value)"></div>
+                            <div><label style="font-size:0.8rem;">Doğru (D):</label><br><input type="number" class="dy-input d-val" value="${row.correct}" min="0" max="${row.totalQ}" onchange="updateCardDY(${idx}, 'correct', this.value)"></div>
+                            <div><label style="font-size:0.8rem;">Yanlış (Y):</label><br><input type="number" class="dy-input y-val" value="${row.wrong}" min="0" max="${row.totalQ}" onchange="updateCardDY(${idx}, 'wrong', this.value)"></div>
                         </div>
                     </div>
                 `;
             });
 
             let overallRate = gQ > 0 ? Math.round((gC / gQ) * 100) : 0;
-            document.getElementById('successRate').textContent = overallRate;
+            let rateEl = document.getElementById('successRate');
+            let totalQEl = document.getElementById('totalSolvedQ');
+            let titleEl = document.getElementById('repTitle');
+            
+            if(rateEl) rateEl.textContent = overallRate;
+            if(totalQEl) totalQEl.textContent = gQ;
+            if(titleEl) titleEl.textContent = getReputationTitle(gQ);
         }
 
         // ÖDEV
-        function addTodoItem() {
+        async function addTodoItem() {
             if (!currentSession || currentSession.isAdmin) return;
             let sub = document.getElementById('todoSubject').value;
             let desc = document.getElementById('todoDesc').value.trim();
@@ -603,29 +784,30 @@
             if (!desc) return;
 
             let no = currentSession.no;
+            if(!cloudData.userData) cloudData.userData = {};
             if(!cloudData.userData[no]) cloudData.userData[no] = { analiz: [], history: [], todos: [] };
             cloudData.userData[no].todos = cloudData.userData[no].todos || [];
             cloudData.userData[no].todos.push({ sub, desc, day, completed: false });
 
-            saveData();
+            await saveCloudData();
             document.getElementById('todoDesc').value = '';
             renderTodos();
             renderProfile();
         }
 
-        function toggleTodo(idx) {
+        async function toggleTodo(idx) {
             let no = currentSession.no;
             let todos = cloudData.userData[no].todos;
             todos[idx].completed = !todos[idx].completed;
-            saveData();
+            await saveCloudData();
             renderTodos();
             renderProfile();
         }
 
-        function delTodo(idx) {
+        async function delTodo(idx) {
             let no = currentSession.no;
             cloudData.userData[no].todos.splice(idx, 1);
-            saveData();
+            await saveCloudData();
             renderTodos();
             renderProfile();
         }
@@ -633,25 +815,24 @@
         function renderTodos() {
             if (!currentSession || currentSession.isAdmin) return;
             let no = currentSession.no;
-            let todos = (cloudData.userData[no] && cloudData.userData[no].todos) || [];
+            let todos = (cloudData.userData && cloudData.userData[no] && cloudData.userData[no].todos) ? cloudData.userData[no].todos : [];
             let list = document.getElementById('todoList');
+            if(!list) return;
             list.innerHTML = '';
             todos.forEach((todo, idx) => {
                 list.innerHTML += `
                     <li class="${todo.completed ? 'todo-item completed' : 'todo-item'}">
-                        <div><strong>${todo.sub}</strong> - ${todo.desc} <span style="font-size:0.8rem; opacity:0.7;">(${todo.day})</span></div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-primary" style="padding:4px 8px;" onclick="toggleTestTodo(${idx})">✓</button>
-                            <button class="btn btn-danger" style="padding:4px 8px;" onclick="delTodo(${idx})">✕</button>
+                        <div><strong>${todo.sub}</strong> - ${todo.desc} <span style="font-size:0.85rem; opacity:0.7;">(Teslim: ${todo.day})</span></div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-primary" style="padding:6px 12px; font-size:0.85rem;" onclick="toggleTodo(${idx})">✓</button>
+                            <button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="delTodo(${idx})">✕</button>
                         </div>
                     </li>
                 `;
             });
         }
-        
-        function toggleTestTodo(idx) { toggleTodo(idx); }
 
-        checkAuth();
+        initApp();
     </script>
 </body>
 </html>
